@@ -1,0 +1,81 @@
+:root {
+  --nova-primary: #0D8BFF;
+  --nova-accent: #33AAFF;
+  --nova-dim: #1A6AAA;
+  --nova-bg-start: #050A18;
+  --nova-bg-end: #000005;
+  --nova-font: 'Courier New', monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  font-family: var(--nova-font);
+  color: var(--nova-primary);
+  user-select: none;
+}
+
+#nova-app {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: radial-gradient(ellipse at center, var(--nova-bg-start) 0%, var(--nova-bg-end) 100%);
+}
+
+#renderer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Scanline overlay */
+#nova-app::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(13, 139, 255, 0.03) 2px,
+    rgba(13, 139, 255, 0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Vignette overlay */
+#nova-app::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%);
+  pointer-events: none;
+  z-index: 6;
+}
