@@ -439,7 +439,7 @@ current_polys = len(joined.data.polygons)
 if current_polys > TARGET_POLYCOUNT:
     ratio = TARGET_POLYCOUNT / current_polys
     decimate = joined.modifiers.new(name="Decimate", type='DECIMATE')
-    decimate.ratio = max(0.1, ratio)
+    decimate.ratio = ratio
     decimate.use_collapse_triangulate = True
     bpy.ops.object.modifier_apply(modifier="Decimate")
 
@@ -481,7 +481,7 @@ bpy.ops.export_scene.gltf(
     use_selection=True,
     export_apply=True,
     export_normals=True,
-    export_colors=False,
+    export_vertex_color='NONE',
     export_materials='NONE',
     export_yup=True,
 )
