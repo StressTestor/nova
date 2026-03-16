@@ -1,11 +1,23 @@
-// NOVA — Neural Operative Virtual Assistant
-// Entry point — will initialize Three.js renderer and Tauri bridge
+import { initScene, startRenderLoop } from './renderer/scene.js';
+import { loadHead } from './renderer/head.js';
+import { createParticles } from './renderer/particles.js';
+import { createAmbientElements } from './renderer/ambient.js';
+import { initAnimation } from './renderer/animation.js';
+import { initTracking } from './renderer/tracking.js';
 
-console.log('NOVA initializing...');
+async function init() {
+  console.log('NOVA initializing...');
 
-document.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('renderer');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  console.log('NOVA ready — renderer placeholder');
-});
+  initScene(canvas);
+  await loadHead();
+  createParticles();
+  createAmbientElements();
+  initAnimation();
+  initTracking();
+  startRenderLoop();
+
+  console.log('NOVA online.');
+}
+
+document.addEventListener('DOMContentLoaded', init);
