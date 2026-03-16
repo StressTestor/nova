@@ -1,0 +1,24 @@
+# Rust
+target/
+
+# Node
+node_modules/
+dist/
+
+# Tauri
+src-tauri/target/
+
+# macOS
+.DS_Store
+*.swp
+
+# Blender
+*.blend1
+__pycache__/
+
+# IDE
+.vscode/
+.idea/
+
+# Environment
+.env
