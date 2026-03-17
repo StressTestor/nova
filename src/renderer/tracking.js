@@ -11,7 +11,7 @@ export function initTracking() {
 function onMouseMove(event) {
   const x = (event.clientX / window.innerWidth) * 2 - 1;
   const y = (event.clientY / window.innerHeight) * 2 - 1;
-  setTargetRotation(-y * MAX_ROTATION_X, x * MAX_ROTATION_Y);
+  setTargetRotation(y * MAX_ROTATION_X, x * MAX_ROTATION_Y);
 }
 
 function onMouseLeave() {

@@ -228,15 +228,16 @@ print(f"Step 4: After closing openings: {len(obj.data.vertices)} verts, {len(obj
 import math
 
 # Create a UV sphere for the hair shell
+# Radius 1.3 ensures it's clearly outside the head surface (~0.1-0.15 gap)
 bpy.ops.mesh.primitive_uv_sphere_add(
     segments=18, ring_count=12,
-    radius=1.1, location=(0, 7.6, 0.3)
+    radius=1.3, location=(0, 7.6, 0.2)
 )
 hair = bpy.context.active_object
 hair.name = "Hair"
 
-# Scale to wrap the head: wider on sides, elongated backward and down
-hair.scale = (1.05, 0.75, 0.85)
+# Scale: wider on sides, elongated backward and down
+hair.scale = (1.05, 0.8, 0.9)
 bpy.ops.object.transform_apply(scale=True)
 
 bm_h = bmesh.new()
@@ -377,20 +378,35 @@ for v in bm.verts:
 
 post_islands.sort(key=len, reverse=True)
 if len(post_islands) > 1:
+    # Only remove tiny fragment islands (< 50 verts).
+    # The hair shell is a legitimate second island (~200 verts) — keep it.
     remove_verts = []
+    removed_count = 0
     for island in post_islands[1:]:
-        for idx in island:
-            remove_verts.append(bm.verts[idx])
-    print(f"  Removing {len(remove_verts)} verts from {len(post_islands)-1} post-decimate islands")
-    bmesh.ops.delete(bm, geom=remove_verts, context='VERTS')
+        if len(island) < 50:
+            for idx in island:
+                remove_verts.append(bm.verts[idx])
+            removed_count += 1
+    if remove_verts:
+        print(f"  Removing {len(remove_verts)} verts from {removed_count} tiny fragment islands (kept {len(post_islands)-1-removed_count} large islands)")
+        bmesh.ops.delete(bm, geom=remove_verts, context='VERTS')
+    else:
+        print(f"  No tiny fragments to remove ({len(post_islands)} islands, all > 50 verts)")
 
 bm.to_mesh(obj.data)
 bm.free()
 
 
 # ═══════════════════════════════════════════════════════════════
-# STEP 7: Center, scale, smooth, export
+# STEP 7: Recalculate normals, center, scale, smooth, export
 # ═══════════════════════════════════════════════════════════════
+
+# Fix flipped/inconsistent normals — prevents white patches in Fresnel shader
+bpy.ops.object.mode_set(mode='EDIT')
+bpy.ops.mesh.select_all(action='SELECT')
+bpy.ops.mesh.normals_make_consistent(inside=False)
+bpy.ops.object.mode_set(mode='OBJECT')
+print("Step 7: Recalculated normals (all outward-facing)")
 
 bpy.ops.object.shade_smooth()
 bpy.ops.object.origin_set(type='ORIGIN_CENTER_OF_VOLUME')
