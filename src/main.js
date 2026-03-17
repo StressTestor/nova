@@ -4,9 +4,13 @@ import { createParticles } from './renderer/particles.js';
 import { createAmbientElements } from './renderer/ambient.js';
 import { initAnimation } from './renderer/animation.js';
 import { initTracking } from './renderer/tracking.js';
+import { initHud } from './ui/hud.js';
+import { initChat } from './ui/chat.js';
 
 async function init() {
   console.log('NOVA initializing...');
+
+  initHud();
 
   const canvas = document.getElementById('renderer');
   initScene(canvas);
@@ -16,6 +20,8 @@ async function init() {
   initAnimation();
   initTracking();
   startRenderLoop();
+
+  await initChat();
 
   console.log('NOVA online.');
 }
