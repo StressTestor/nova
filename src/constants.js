@@ -29,7 +29,7 @@ export const STATE_PARAMS = {
     wireframePulse: 2.0,
   },
   [STATES.IDLE]: {
-    opacity: 0.75,
+    opacity: 0.85,
     scanlineIntensity: 0.5,
     glitch: 0.0,
     particleSpeed: 1.0,

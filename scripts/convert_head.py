@@ -220,6 +220,105 @@ print(f"Step 4: After closing openings: {len(obj.data.vertices)} verts, {len(obj
 
 
 # ═══════════════════════════════════════════════════════════════
+# STEP 4b: Add hair volume
+# Simple swept-back shell that wraps the back/top of the head.
+# Works in original MakeHuman coordinates (Y up, head top ~8.5).
+# ═══════════════════════════════════════════════════════════════
+
+import math
+
+# Create a UV sphere for the hair shell
+bpy.ops.mesh.primitive_uv_sphere_add(
+    segments=18, ring_count=12,
+    radius=1.1, location=(0, 7.6, 0.3)
+)
+hair = bpy.context.active_object
+hair.name = "Hair"
+
+# Scale to wrap the head: wider on sides, elongated backward and down
+hair.scale = (1.05, 0.75, 0.85)
+bpy.ops.object.transform_apply(scale=True)
+
+bm_h = bmesh.new()
+bm_h.from_mesh(hair.data)
+bm_h.verts.ensure_lookup_table()
+
+for v in bm_h.verts:
+    x, y, z = v.co.x, v.co.y, v.co.z
+
+    # Poofy top
+    if y > 0.2:
+        t = (y - 0.2) / 0.6
+        x *= 1.0 + t * 0.08
+        z *= 1.0 + t * 0.05
+
+    # Back hair flows down further
+    if z < -0.1:
+        back_t = min(1.0, max(0, (-0.1 - z) / 0.6))
+        y -= back_t * 0.6  # extend downward
+        x *= 1.0 + back_t * 0.03
+
+    # Hair tips taper into strands
+    if y < -0.5:
+        t = min(1.0, max(0, (-0.5 - y) / 0.5))
+        angle = math.atan2(x, z)
+        strand = 0.5 + 0.5 * math.sin(angle * 6.0)
+        taper = 1.0 - t * (0.25 + strand * 0.45)
+        x *= max(0.12, taper)
+        z *= max(0.12, taper)
+
+    v.co.x = x
+    v.co.y = y
+    v.co.z = z
+
+# Delete front-lower vertices where the face shows through
+verts_remove = []
+bm_h.verts.ensure_lookup_table()
+for v in bm_h.verts:
+    # Face area: front (z > 0.3), below forehead (y < 0.25), within face width
+    if v.co.z > 0.3 and v.co.y < 0.25 and abs(v.co.x) < 0.55:
+        # But keep the bangs (top-front)
+        if not (v.co.y > 0.05 and v.co.z > 0.5):
+            verts_remove.append(v)
+    # Also remove bottom-interior verts
+    if v.co.y < -0.9 and abs(v.co.x) < 0.2 and v.co.z > 0:
+        verts_remove.append(v)
+
+if verts_remove:
+    bmesh.ops.delete(bm_h, geom=verts_remove, context='VERTS')
+
+# Light smooth
+bm_h.verts.ensure_lookup_table()
+for _ in range(2):
+    offsets = {}
+    for v in bm_h.verts:
+        if not v.link_edges:
+            continue
+        neighbors = [e.other_vert(v).co.copy() for e in v.link_edges]
+        if neighbors:
+            avg = sum(neighbors, Vector((0, 0, 0))) / len(neighbors)
+            offsets[v.index] = (avg - v.co) * 0.2
+    for v in bm_h.verts:
+        if v.index in offsets:
+            v.co += offsets[v.index]
+
+bm_h.to_mesh(hair.data)
+bm_h.free()
+
+bpy.ops.object.shade_smooth()
+hair_faces = len(hair.data.polygons)
+print(f"Step 4b: Added hair volume ({hair_faces} faces)")
+
+# Join hair to head
+bpy.ops.object.select_all(action='DESELECT')
+hair.select_set(True)
+obj.select_set(True)
+bpy.context.view_layer.objects.active = obj
+bpy.ops.object.join()
+print(f"  After join: {len(obj.data.vertices)} verts, {len(obj.data.polygons)} faces")
+
+
+# ═══════════════════════════════════════════════════════════════
 # STEP 5: Decimate to target face count
 # ═══════════════════════════════════════════════════════════════
 

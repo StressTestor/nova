@@ -53,7 +53,9 @@ void main() {
   finalColor *= flicker;
 
   // Opacity: base + Fresnel boost
-  float alpha = uOpacity * (0.4 + fresnelGlow * 0.6);
+  // Higher base fill (0.55) gives the face more solid presence
+  // Fresnel still brightens edges for the holographic rim glow
+  float alpha = uOpacity * (0.55 + fresnelGlow * 0.45);
   alpha += scanline * 0.1;
   alpha += dataBand * 0.3;
 
